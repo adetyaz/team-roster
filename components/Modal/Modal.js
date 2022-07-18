@@ -1,5 +1,6 @@
 import { forwardRef, useState, useImperativeHandle } from 'react'
 import { createPortal } from 'react-dom'
+import { BsX } from 'react-icons/bs'
 
 const Modal = forwardRef(({ title, children }, ref) => {
 	const [show, setShow] = useState(false)
@@ -20,7 +21,7 @@ const Modal = forwardRef(({ title, children }, ref) => {
 				<div className='modal-card'>
 					<div className='modal-top'>
 						<h3>{title}</h3>
-						<p onClick={closeModal}>X</p>
+						<BsX color='#ffffff' onClick={closeModal} size={20} />
 					</div>
 					<hr />
 					{children}

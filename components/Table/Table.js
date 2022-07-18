@@ -1,8 +1,9 @@
 import Button from '@components/Button/Button'
 import { useState } from 'react'
+import { useAppState } from 'context/appState'
 
 const Table = () => {
-	const [show, setShow] = useState(false)
+	const { teamSheet } = useAppState()
 	const player = {
 		name: 'igor',
 		number: 4,
@@ -20,12 +21,12 @@ const Table = () => {
 			<div className='tr'>
 				<div className='th'>player name</div>
 				<div className='th'>jersey number</div>
-				{show && <div className='th'>starter</div>}
+				{teamSheet?.length > 0 && <div className='th'>starter</div>}
 				<div className='th'>position</div>
 				<div className='th'>height</div>
 				<div className='th'>weight</div>
 				<div className='th'>nationality</div>
-				{show && (
+				{teamSheet?.length > 0 && (
 					<>
 						<div className='th'>appearances</div>
 						<div className='th'>minutes played</div>
@@ -33,7 +34,7 @@ const Table = () => {
 					</>
 				)}
 			</div>
-			{show === true ? (
+			{teamSheet?.length > 0 === true ? (
 				<div className='tr'>
 					<div className='td'>
 						<img src='' alt='country' className='player-country' />

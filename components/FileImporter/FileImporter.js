@@ -1,92 +1,101 @@
 import Button from '@components/Button/Button'
-import InputField from '@components/InputField/InputField'
-import { useState } from 'react'
-import CSVReader from 'react-papaparse'
+import { useState, useEffect } from 'react'
+import CSVReader from 'react-csv-reader'
+
+const ROOT_URL = 'http://localhost:3000'
 
 const FileImporter = () => {
-	const [csvFile, setCsvFile] = useState('')
 	const [csvData, setCsvData] = useState([])
+	const [keeper, setKeeper] = useState(null)
+	const [midfielders, setMidfielders] = useState(null)
+	const [defender, setDefender] = useState(null)
+	const [forward, setForward] = useState(null)
+	const [errorMessage, setErrorMessage] = useState(false)
 
-	// const processCsv = (str, delim = ',') => {
-	// 	const headers = str.slice(0, str.indexOf('\n')).split(delim)
-	// 	const rows = str.slice(str.indexOf('\n') + 1).split('\n')
+	const postData = async () => {
+		const res = await fetch(`${ROOT_URL}/api/data`, {
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/json',
+			},
+			body: JSON.stringify(csvData),
+		})
+		const newData = await res.json()
+	}
 
-	// 	const newArray = rows.map((row) => {
-	// 		const values = row.split(delim)
-	// 		const eachObject = headers.reduce((obj, header, i) => {
-	// 			obj[header] = values[i]
-	// 			return obj
-	// 		}, {})
-	// 		return eachObject
-	// 	})
-	// 	console.log(newArray)
-	// 	setCsvData(newArray)
-	// }
+	const handleOnFileLoad = (data, fileInfo) => {
+		data.map((item) => Object.values(item).includes('' || null)).includes(true)
+			? setErrorMessage(true)
+			: setCsvData(data)
+	}
 
-	// const submitFile = (e) => {
-	// 	if (csvFile) {
-	// 		const file = csvFile
-	// 		const reader = new FileReader()
+	useEffect(() => {
+		const keeperPosition = csvData.filter(
+			(data) => data.position === 'Goalkeeper'
+		)
+		const defenderPosition = csvData.filter(
+			(data) => data.position === 'Defender'
+		)
+		const midfieldPosition = csvData.filter(
+			(data) => data.position === 'Midfielder'
+		)
+		const forwardPosition = csvData.filter(
+			(data) => data.position === 'Forward'
+		)
+		setKeeper(keeperPosition)
+		setDefender(defenderPosition)
+		setMidfielders(midfieldPosition)
+		setForward(forwardPosition)
+	}, [csvData])
 
-	// 		reader.onload = (e) => {
-	// 			const data = e.target.result
-	// 			processCsv(data)
-	// 		}
-
-	// 		reader.readAsText(file)
-	// 	}
-	// }
+	const papaparseOptions = {
+		header: true,
+		dynamicTyping: true,
+		skipEmptyLines: true,
+		transformHeader: (header) => header.toLowerCase().replace(/\W/g, '_'),
+	}
 
 	return (
-		<>
+		<div className='file-importer'>
 			<CSVReader
-				onUploadAccepted={(results) => {
-					console.log('---------------------------')
-					console.log(results)
-					console.log('---------------------------')
-				}}
-			>
-				{({
-					getRootProps,
-					acceptedFile,
+				onFileLoaded={handleOnFileLoad}
+				parserOptions={papaparseOptions}
+			></CSVReader>
+			<label for='react-csv-reader-input'>get file</label>
 
-					getRemoveFileProps,
-				}) => (
-					<>
-						<div style={styles.csvReader}>
-							<button
-								type='button'
-								{...getRootProps()}
-								style={styles.browseFile}
-							>
-								Browse file
-							</button>
-							<div style={styles.acceptedFile}>
-								{acceptedFile && acceptedFile.name}
-							</div>
-							<button {...getRemoveFileProps()} style={styles.remove}>
-								Remove
-							</button>
-						</div>
-					</>
-				)}
-			</CSVReader>
-			{/* <div className='file-importer'>
-				<InputField
-					type='file'
-					accept='.csv'
-					onChange={(e) => setCsvFile(e.target.files[0])}
-				/>
-				<Button variant='outline' type='file' onClick={submitFile}>
-					Select file
-				</Button>
-			</div> */}
-			{/* <div>
-				{csvData.map((data) => (
-					<div key={data.Playername}>{data.Position}</div>
-				))}
-			</div> */}
-		</>
+			<p className='error-message'>{errorMessage && 'Error Error Error'}</p>
+
+			{csvData?.length > 0 && (
+				<div className='file-summary'>
+					{/* <h3>File summary</h3> */}
+
+					<div>
+						<h3>Total players</h3>
+						<p>{csvData.length}</p>
+					</div>
+					<div>
+						<h3>Keepers</h3>
+						<p>{keeper.length}</p>
+					</div>
+					<div>
+						<h3>Defenders</h3>
+						<p>{defender.length}</p>
+					</div>
+					<div>
+						<h3>Midfielders</h3>
+						<p>{midfielders.length}</p>
+					</div>
+					<div>
+						<h3>Forwards</h3>
+						<p>{forward.length}</p>
+					</div>
+				</div>
+			)}
+
+			<div>
+				<Button onClick={() => postData()}>Import</Button>
+			</div>
+		</div>
 	)
 }
 
